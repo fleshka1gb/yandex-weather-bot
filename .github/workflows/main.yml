@@ -1,0 +1,56 @@
+name: Yandex Weather Sniper (Izhevsk)
+
+on:
+  schedule:
+    # Запуск каждые 15 минут круглосуточно
+    - cron: '*/15 * * * *'
+  workflow_dispatch: # Кнопка для ручного запуска в GitHub
+
+permissions:
+  contents: write
+
+jobs:
+  run-sniper:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: Install dependencies
+        run: |
+          pip install --upgrade pip
+          pip install -r requirements.txt
+          playwright install --with-deps chromium
+
+      - name: Run Weather Sniper Bot
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: |
+          python bot.py
+
+      - name: Upload debug screenshot (if failed or finished)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: last-action-screenshot
+          path: last_action.png
+          retention-days: 1
+        continue-on-error: true
+
+      - name: Commit and push daily stats
+        if: always()
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add stats.json
+          git commit -m "Update weather stats [skip ci]" || echo "No changes to commit"
+          git push
