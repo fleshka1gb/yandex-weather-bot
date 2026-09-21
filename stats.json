@@ -1,8 +1,9 @@
 {
-  "date": "",
+  "date": "2026-09-21",
   "yes": 0,
-  "no": 0,
-  "total": 0,
-  "last_run": "",
-  "last_status": ""
+  "no": 1,
+  "total": 1,
+  "last_run": "2026-09-21 14:32:21",
+  "last_run_epoch": 1789986741,
+  "last_status": "облачно с прояснениями"
 }
